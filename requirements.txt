@@ -22,3 +22,7 @@ pillow
 
 # frontend
 streamlit
+
+librosa
+resemblyzer
+
