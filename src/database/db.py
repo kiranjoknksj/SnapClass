@@ -34,3 +34,64 @@ def teacher_login(username, password):
 def get_all_students():
     response = supabase.table("student").select("*").execute()
     return response.data
+
+
+def create_student(new_name, face_embedding=None, voice_embedding=None):
+    data = {'name': new_name, 'face_embedding':face_embedding, 'voice_embedding':voice_embedding}
+    resopnse = supabase.table('student').insert(data).execute()
+    return resopnse.data 
+
+
+
+def create_subject(subject_code, name, section, teacher_id):
+    data = {'subject_code':subject_code, 'name':name, 'section':section, 'teacher_id':teacher_id}
+    response = supabase.table('subject').insert(data).execute()
+    return response.data
+
+
+def get_teacher_subject(teacher_id):
+    response = supabase.table('subject').select('*, subject_student(count), attendance_log(timestamp)').eq('teacher_id', teacher_id).execute()
+    subjects = response.data
+
+
+    for sub in subjects:
+        sub['total_student'] = sub.get('subject_student', [{}])[0].get('count', 0) if sub.get('subject_student') else 0
+        attendance = sub.get('attendance_log', [])
+        qnique_session = len(set(log['timestamp'] for log in attendance))
+        sub['total_classes'] = qnique_session
+
+
+        sub.pop('subject_student', None)
+        sub.pop('attendance_log', None)
+    return subjects
+
+
+def enroll_student_to_subject(student_id, subject_id):
+    data = {'student_id':student_id, 'subject_id':subject_id}
+    response = supabase.table('subject_student').insert(data).execute()
+    return response.data
+
+def unenroll_student_to_subject(student_id, subject_id):
+    response = supabase.table('subject_student').delete().eq('student_id', student_id).eq('subject_id',subject_id).execute()
+    return response.data
+
+
+def get_student_subjects(student_id):
+    response = supabase.table('subject_student').select('*, subject(*)').eq('student_id', student_id).execute()
+    return response.data
+
+
+def get_student_attendance(student_id):
+    response = supabase.table('attendance_log').select('*, subject(*)').eq('student_id', student_id).execute()
+    return response.data
+
+
+
+def create_attendance(logs):
+    response = supabase.table('attendance_log').insert(logs).execute()
+    return response.data
+
+
+def get_attendance_for_teacher(teacher_id):
+    response = supabase.table('attendance_log').select("*, subject!inner(*)").eq('subject.teacher_id', teacher_id).execute()
+    return response.data

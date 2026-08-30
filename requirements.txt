@@ -1,3 +1,5 @@
+# frontend
+streamlit
 
 numpy
 pandas
@@ -19,9 +21,6 @@ bcrypt
 segno
 # image preprocessing
 pillow
-
-# frontend
-streamlit
 
 librosa
 resemblyzer
